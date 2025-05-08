@@ -3,6 +3,8 @@ import MapContainer from "@/components/map-container"
 import ChatInterface from "@/components/chat-interface"
 import { Toaster } from "@/components/ui/toaster"
 import ModelSettings from "@/components/model-settings"
+import { Github } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 export default function Home() {
   return (
@@ -29,6 +31,17 @@ export default function Home() {
         </div>
         <div className="flex items-center gap-2">
           <ModelSettings />
+          <a
+            href="https://github.com/Seanium/ChatMap"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="GitHub 仓库"
+          >
+            <Button variant="outline" size="icon" className="h-9 w-9">
+              <Github className="h-4 w-4" />
+              <span className="sr-only">GitHub 仓库</span>
+            </Button>
+          </a>
         </div>
       </header>
 
