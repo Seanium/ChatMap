@@ -109,7 +109,7 @@ export async function generateMapResponseClient(query: string, conversationHisto
 }
 
 // 流式响应生成函数
-export async function generateStreamingResponseClient(conversationHistory: Message[]) {
+export async function generateStreamingResponseClient(conversationHistory: Message[], abortSignal?: AbortSignal) {
   if (!conversationHistory || !Array.isArray(conversationHistory) || conversationHistory.length === 0) {
     throw new Error("对话历史无效");
   }
@@ -132,13 +132,14 @@ export async function generateStreamingResponseClient(conversationHistory: Messa
           "x-api-key": legacyApiKey,
         },
         body: JSON.stringify({ conversationHistory }),
+        signal: abortSignal,
       })
       
       if (!response.ok || !response.body) {
         throw new Error(`流式响应失败: ${response.status} ${response.statusText}`);
       }
       
-      return streamAsyncIterable(response.body);
+      return streamAsyncIterable(response.body, abortSignal);
     }
     
     // 解析模型设置
@@ -166,37 +167,44 @@ export async function generateStreamingResponseClient(conversationHistory: Messa
           temperature: settings.temperature
         }
       }),
+      signal: abortSignal,
     })
     
     if (!response.ok || !response.body) {
       throw new Error(`流式响应失败: ${response.status} ${response.statusText}`);
     }
     
-    return streamAsyncIterable(response.body);
-  } catch (error) {
+    return streamAsyncIterable(response.body, abortSignal);
+  } catch (error: any) {
+    // 对于AbortError，我们可以静默处理
+    if (error.name === 'AbortError') {
+      console.log("请求已被用户取消");
+      throw new Error("用户取消了请求");
+    }
     console.error("创建流式响应时出错:", error);
     throw error;
   }
 }
 
 // 辅助函数：将ReadableStream转换为异步迭代器
-async function* streamAsyncIterable(stream: ReadableStream<Uint8Array>) {
+async function* streamAsyncIterable(stream: ReadableStream<Uint8Array>, abortSignal?: AbortSignal) {
   const reader = stream.getReader();
   const decoder = new TextDecoder();
   
   try {
     while (true) {
+      if (abortSignal?.aborted) {
+        break;
+      }
+      
       const { done, value } = await reader.read();
       if (done) {
         return;
       }
       
-      // 解码二进制数据为文本
       const chunk = decoder.decode(value, { stream: true });
       
-      // 处理流中的事件
       if (chunk) {
-        // 提取事件数据
         const lines = chunk
           .split('\n')
           .filter(line => line.trim() !== '')
@@ -209,20 +217,17 @@ async function* streamAsyncIterable(stream: ReadableStream<Uint8Array>) {
           
           try {
             if (line) {
-              // 如果是JSON格式的内容，解析它
               if (line.startsWith('{')) {
                 const parsed = JSON.parse(line);
                 if (parsed.choices && parsed.choices[0] && parsed.choices[0].delta && parsed.choices[0].delta.content) {
                   yield parsed.choices[0].delta.content;
                 }
               } else {
-                // 否则，直接返回文本
                 yield line;
               }
             }
           } catch (e) {
             console.warn('解析流数据出错:', e, line);
-            // 如果解析失败但仍有内容，返回原始内容
             if (line) {
               yield line;
             }

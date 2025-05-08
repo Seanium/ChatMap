@@ -35,7 +35,7 @@ const MODEL_PROVIDERS = [
     id: "siliconflow",
     name: "SiliconFlow",
     defaultBaseURL: "https://api.siliconflow.cn/v1",
-    defaultModel: "THUDM/GLM-Z1-9B-0414",
+    defaultModel: "Qwen/Qwen2.5-7B-Instruct",
   },
   {
     id: "custom",
@@ -70,7 +70,7 @@ const DEFAULT_SETTINGS: ModelSettings = {
     },
     siliconflow: {
       baseURL: "https://api.siliconflow.cn/v1",
-      model: "THUDM/GLM-Z1-9B-0414",
+      model: "Qwen/Qwen2.5-7B-Instruct",
       apiKey: "",
     },
     custom: {
@@ -222,13 +222,13 @@ export default function ModelSettings() {
       // 关闭对话框
       setIsOpen(false)
 
-      toast({
-        title: "模型设置已保存",
-        description: "您的设置已成功保存",
-      })
+      // toast({
+      //   title: "模型设置已保存",
+      //   description: "您的设置已成功保存，将在下次请求中生效",
+      // })
 
-      // 重新加载页面以应用新设置
-      window.location.reload()
+      // 不再刷新页面，避免地图和UI重置
+      // window.location.reload()
     } catch (error) {
       console.error("保存模型设置时出错:", error)
       toast({

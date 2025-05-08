@@ -1,5 +1,4 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { getMockResponse } from "@/lib/mock-data"
 import OpenAI from "openai"; // Ensure OpenAI is imported
 
 interface Message {
