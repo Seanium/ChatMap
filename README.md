@@ -6,7 +6,11 @@
 
 ## Demo
 
-https://chat-map-tawny.vercel.app/
+演示站点：[ChatMap](https://www.chatmap.space/)
+
+网站截图：
+
+![image](https://github.com/user-attachments/assets/f74f0fcc-eb16-425a-b691-62e15e1a603b)
 
 ![image](https://github.com/user-attachments/assets/947cb3b3-a213-438e-9235-cff00803104a)
 
