@@ -35,7 +35,7 @@ const MODEL_PROVIDERS = [
     id: "siliconflow",
     name: "SiliconFlow",
     defaultBaseURL: "https://api.siliconflow.cn/v1",
-    defaultModel: "Qwen/Qwen3-8B",
+    defaultModel: "THUDM/GLM-Z1-9B-0414",
   },
   {
     id: "custom",
@@ -70,7 +70,7 @@ const DEFAULT_SETTINGS: ModelSettings = {
     },
     siliconflow: {
       baseURL: "https://api.siliconflow.cn/v1",
-      model: "Qwen/Qwen3-8B",
+      model: "THUDM/GLM-Z1-9B-0414",
       apiKey: "",
     },
     custom: {
