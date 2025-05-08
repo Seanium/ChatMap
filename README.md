@@ -2,7 +2,7 @@
 
 <p align="center">对话式地图智能体</p>
 
-> 本项目受 [SmartMap](https://www.smartmap.space/) 启发，旨在开源复现其功能。
+> 本项目受 [SmartMap](https://www.smartmap.space/) 启发，旨在开源复现并拓展其功能。
 
 ## Demo
 
