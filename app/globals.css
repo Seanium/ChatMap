@@ -1,0 +1,160 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Custom marker styles */
+.custom-marker-icon {
+  background: transparent;
+  border: none;
+}
+
+/* Leaflet container styles */
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  z-index: 1; /* Explicitly set a base z-index for the map container */
+}
+
+/* Ensure Leaflet controls are also below the overlay if they have high z-index */
+.leaflet-control {
+  z-index: 2; /* Should be above map panes but below dialog overlay */
+}
+
+/* Leaflet popup styles */
+.leaflet-popup-content {
+  padding: 5px;
+  max-width: 250px;
+}
+
+.leaflet-popup-content h3 {
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+.leaflet-popup-content p {
+  margin: 0;
+}
+
+/* Apply a higher z-index to Radix UI Dialog Overlay */
+/* You might need to inspect the exact class or data attribute Radix/Shadcn uses */
+/* This is a common pattern, but might need adjustment */
+@layer components {
+  [data-radix-dialog-overlay],
+  [data-radix-alert-dialog-overlay] {
+    z-index: 1040 !important; /* Ensure this is below DialogContent (1050) but above map */
+  }
+
+  /* If using shadcn/ui, the overlay might be a div directly inside the portal */
+  /* Or it might have a specific class like .DialogOverlay (less common now) */
+  /* Example if it's a direct child of the portal when open: */
+  /* 
+  .DialogPortal > div[data-state='open'][data-radix-overlay] {
+    z-index: 1040 !important; 
+  }
+  */
+}
+
+/* Commenting out the individual pane z-index overrides for now,
+   as Leaflet's default z-indices for panes are usually well below 1000.
+   The issue is more likely with the container or specific high-z-index elements
+   on the map, or the overlay not applying correctly.
+   If the above doesn't work, we might need to inspect specific map elements.
+*/
+
+/*
+.leaflet-map-pane {
+  z-index: 10 !important; 
+}
+.leaflet-tile-pane {
+  z-index: 20 !important; 
+}
+.leaflet-overlay-pane {
+  z-index: 40 !important;
+}
+.leaflet-shadow-pane {
+  z-index: 50 !important;
+}
+.leaflet-marker-pane {
+  z-index: 60 !important;
+}
+.leaflet-tooltip-pane {
+  z-index: 65 !important;
+}
+.leaflet-popup-pane {
+  z-index: 70 !important;
+}
+*/
