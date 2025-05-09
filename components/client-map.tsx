@@ -144,20 +144,14 @@ export default function ClientMap({ markers, setMapInstance, task_type = "LOCATI
       let zIndexOffset = 0;
       let markerLabel = `${index + 1}`;
       
-      if (task_type === "SINGLE_LOCATION") {
-        // 单一地点：使用紫色并加大图标
-        markerColor = "purple";
-        zIndexOffset = 1000;
-      }
       // 所有地点使用默认的蓝色标记
 
       const customIcon = L.divIcon({
         className: "custom-marker-icon",
         html: `
-          <div class="w-8 h-8 bg-${markerColor}-500 rounded-full flex items-center justify-center text-white font-bold relative">
+          <div class="marker-pin-body">
             ${markerLabel}
-            <div class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-0 h-0 
-                        border-l-8 border-r-8 border-t-8 border-transparent border-t-${markerColor}-500"></div>
+            <div class="marker-pin-triangle"></div>
           </div>
         `,
         iconSize: [32, 32],
@@ -223,6 +217,30 @@ export default function ClientMap({ markers, setMapInstance, task_type = "LOCATI
         .custom-marker-icon {
           background: transparent;
           border: none;
+        }
+        .marker-pin-body {
+          width: 32px; /* Corresponds to w-8 */
+          height: 32px; /* Corresponds to h-8 */
+          background-color: #3b82f6; /* Tailwind blue-500 */
+          border-radius: 50%; /* For a perfect circle */
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #ffffff; /* text-white */
+          font-weight: 700; /* font-bold */
+          position: relative;
+          box-sizing: border-box;
+        }
+        .marker-pin-triangle {
+          position: absolute;
+          bottom: -8px; /* Corresponds to -bottom-2 (8px pointing down) */
+          left: 50%;
+          transform: translateX(-50%);
+          width: 0;
+          height: 0;
+          border-left: 8px solid transparent;
+          border-right: 8px solid transparent;
+          border-top: 8px solid #3b82f6; /* Tailwind blue-500 for the triangle top border */
         }
       `}</style>
     </div>
