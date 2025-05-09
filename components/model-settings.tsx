@@ -16,12 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/components/ui/use-toast"
 import { Settings, Eye, EyeOff, Lightbulb, Zap, Sparkles } from "lucide-react"
 import { Slider } from "@/components/ui/slider"
-import { 
-  Tooltip, 
-  TooltipContent, 
-  TooltipProvider, 
-  TooltipTrigger 
-} from "@/components/ui/tooltip"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 // 预设模型提供商列表
 const MODEL_PROVIDERS = [
@@ -46,17 +41,17 @@ const MODEL_PROVIDERS = [
 ]
 
 export interface ProviderSettings {
-  baseURL: string;
-  model: string;
-  apiKey: string;
+  baseURL: string
+  model: string
+  apiKey: string
 }
 
 export interface ModelSettings {
-  provider: string;
-  temperature: number;
+  provider: string
+  temperature: number
   providerSettings: {
-    [key: string]: ProviderSettings;
-  };
+    [key: string]: ProviderSettings
+  }
 }
 
 const DEFAULT_SETTINGS: ModelSettings = {
@@ -77,8 +72,8 @@ const DEFAULT_SETTINGS: ModelSettings = {
       baseURL: "",
       model: "",
       apiKey: "",
-    }
-  }
+    },
+  },
 }
 
 export default function ModelSettings() {
@@ -91,7 +86,7 @@ export default function ModelSettings() {
   const currentProviderSettings = settings.providerSettings[settings.provider] || {
     baseURL: "",
     model: "",
-    apiKey: ""
+    apiKey: "",
   }
 
   // 在组件挂载时从 localStorage 加载设置
@@ -99,38 +94,39 @@ export default function ModelSettings() {
     try {
       const storedSettings = localStorage.getItem("model_settings")
       if (storedSettings) {
-        const parsedSettings = JSON.parse(storedSettings);
-        
+        const parsedSettings = JSON.parse(storedSettings)
+
         // 如果是旧格式的设置，转换为新格式
         if (!parsedSettings.providerSettings) {
           // 创建新的设置对象
           const convertedSettings: ModelSettings = {
             provider: parsedSettings.provider || DEFAULT_SETTINGS.provider,
-            temperature: parsedSettings.temperature !== undefined ? parsedSettings.temperature : DEFAULT_SETTINGS.temperature,
-            providerSettings: {...DEFAULT_SETTINGS.providerSettings}
-          };
-          
+            temperature:
+              parsedSettings.temperature !== undefined ? parsedSettings.temperature : DEFAULT_SETTINGS.temperature,
+            providerSettings: { ...DEFAULT_SETTINGS.providerSettings },
+          }
+
           // 将旧的数据迁移到当前提供商
           if (parsedSettings.provider) {
             convertedSettings.providerSettings[parsedSettings.provider] = {
               baseURL: parsedSettings.baseURL || "",
               model: parsedSettings.model || "",
-              apiKey: parsedSettings.apiKey || ""
-            };
+              apiKey: parsedSettings.apiKey || "",
+            }
           }
-          
-          setSettings(convertedSettings);
+
+          setSettings(convertedSettings)
         } else {
           // 已经是新格式
-          setSettings(parsedSettings);
+          setSettings(parsedSettings)
         }
       } else {
         // 如果有旧版的 API 密钥，则迁移它
         const legacyApiKey = localStorage.getItem("openai_api_key")
         if (legacyApiKey) {
-          const newSettings = {...DEFAULT_SETTINGS};
-          newSettings.providerSettings.openai.apiKey = legacyApiKey;
-          setSettings(newSettings);
+          const newSettings = { ...DEFAULT_SETTINGS }
+          newSettings.providerSettings.openai.apiKey = legacyApiKey
+          setSettings(newSettings)
         } else {
           // 如果没有设置，打开设置对话框
           setIsOpen(true)
@@ -145,8 +141,8 @@ export default function ModelSettings() {
   const handleProviderChange = (providerId: string) => {
     setSettings({
       ...settings,
-      provider: providerId
-    });
+      provider: providerId,
+    })
   }
 
   // 更新当前提供商的设置
@@ -157,16 +153,16 @@ export default function ModelSettings() {
         ...settings.providerSettings,
         [settings.provider]: {
           ...settings.providerSettings[settings.provider],
-          [key]: value
-        }
-      }
-    });
+          [key]: value,
+        },
+      },
+    })
   }
 
   const handleSave = () => {
     try {
       const { provider, providerSettings, temperature } = settings
-      const currentSettings = providerSettings[provider];
+      const currentSettings = providerSettings[provider]
       const trimmedKey = currentSettings.apiKey.trim()
       const trimmedBaseURL = currentSettings.baseURL.trim()
       const trimmedModel = currentSettings.model.trim()
@@ -208,9 +204,9 @@ export default function ModelSettings() {
             ...settings.providerSettings[provider],
             baseURL: trimmedBaseURL,
             model: trimmedModel,
-            apiKey: trimmedKey
-          }
-        }
+            apiKey: trimmedKey,
+          },
+        },
       }
 
       // 保存到 localStorage
@@ -239,15 +235,16 @@ export default function ModelSettings() {
     }
   }
 
+  // 修改模型设置弹窗，保持一致的设计风格和组件
   const toggleApiKeyVisibility = () => {
     setShowApiKey(!showApiKey)
   }
 
   // 温度模式描述
   const getTemperatureDescription = (temp: number) => {
-    if (temp <= 0.3) return "精确模式：提供更一致、更注重事实的回答";
-    if (temp <= 0.7) return "平衡模式：在一致性和多样性之间取得良好平衡";
-    return "创意模式：提供更多样化和创意性的建议";
+    if (temp <= 0.3) return "精确模式：提供更一致、更注重事实的回答"
+    if (temp <= 0.7) return "平衡模式：在一致性和多样性之间取得良好平衡"
+    return "创意模式：提供更多样化和创意性的建议"
   }
 
   return (
@@ -268,14 +265,9 @@ export default function ModelSettings() {
           <div className="flex flex-col gap-4 py-4">
             {/* 提供商选择 */}
             <div className="grid gap-2">
-              <Label htmlFor="provider">
-                提供商
-              </Label>
-              <Select
-                value={settings.provider}
-                onValueChange={handleProviderChange}
-              >
-                <SelectTrigger>
+              <Label htmlFor="provider">提供商</Label>
+              <Select value={settings.provider} onValueChange={handleProviderChange}>
+                <SelectTrigger id="provider">
                   <SelectValue placeholder="选择模型提供商" />
                 </SelectTrigger>
                 <SelectContent position="popper" className="z-[110]">
@@ -290,9 +282,7 @@ export default function ModelSettings() {
 
             {/* 基础 URL */}
             <div className="grid gap-2">
-              <Label htmlFor="baseURL">
-                API 端点
-              </Label>
+              <Label htmlFor="baseURL">API 端点</Label>
               <Input
                 id="baseURL"
                 value={currentProviderSettings.baseURL}
@@ -303,9 +293,7 @@ export default function ModelSettings() {
 
             {/* 模型名称 */}
             <div className="grid gap-2">
-              <Label htmlFor="model">
-                模型名称
-              </Label>
+              <Label htmlFor="model">模型名称</Label>
               <Input
                 id="model"
                 value={currentProviderSettings.model}
@@ -316,9 +304,7 @@ export default function ModelSettings() {
 
             {/* API 密钥 */}
             <div className="grid gap-2">
-              <Label htmlFor="apiKey">
-                API 密钥
-              </Label>
+              <Label htmlFor="apiKey">API 密钥</Label>
               <div className="relative">
                 <Input
                   id="apiKey"
@@ -335,11 +321,7 @@ export default function ModelSettings() {
                   className="absolute right-0 top-0 h-full px-3"
                   onClick={toggleApiKeyVisibility}
                 >
-                  {showApiKey ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
+                  {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   <span className="sr-only">{showApiKey ? "隐藏" : "显示"} API 密钥</span>
                 </Button>
               </div>
@@ -362,9 +344,9 @@ export default function ModelSettings() {
               <div className="text-sm text-muted-foreground mt-1">
                 {getTemperatureDescription(settings.temperature)}
               </div>
-              
-              <TooltipProvider>
-                <div className="flex items-center gap-1 mt-2">
+
+              <div className="flex items-center gap-1 mt-2">
+                <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
@@ -373,7 +355,9 @@ export default function ModelSettings() {
                         className="h-8 px-2"
                         onClick={() => setSettings({ ...settings, temperature: 0.2 })}
                       >
-                        <Zap className={`h-4 w-4 ${settings.temperature <= 0.3 ? "text-primary-foreground" : "text-blue-500"}`} />
+                        <Zap
+                          className={`h-4 w-4 ${settings.temperature <= 0.3 ? "text-primary-foreground" : "text-blue-500"}`}
+                        />
                         <span className="ml-1">精确</span>
                       </Button>
                     </TooltipTrigger>
@@ -391,7 +375,9 @@ export default function ModelSettings() {
                         className="h-8 px-2"
                         onClick={() => setSettings({ ...settings, temperature: 0.6 })}
                       >
-                        <Lightbulb className={`h-4 w-4 ${settings.temperature > 0.3 && settings.temperature <= 0.7 ? "text-primary-foreground" : "text-green-500"}`} />
+                        <Lightbulb
+                          className={`h-4 w-4 ${settings.temperature > 0.3 && settings.temperature <= 0.7 ? "text-primary-foreground" : "text-green-500"}`}
+                        />
                         <span className="ml-1">平衡</span>
                       </Button>
                     </TooltipTrigger>
@@ -409,7 +395,9 @@ export default function ModelSettings() {
                         className="h-8 px-2"
                         onClick={() => setSettings({ ...settings, temperature: 0.9 })}
                       >
-                        <Sparkles className={`h-4 w-4 ${settings.temperature > 0.7 ? "text-primary-foreground" : "text-purple-500"}`} />
+                        <Sparkles
+                          className={`h-4 w-4 ${settings.temperature > 0.7 ? "text-primary-foreground" : "text-purple-500"}`}
+                        />
                         <span className="ml-1">创意</span>
                       </Button>
                     </TooltipTrigger>
@@ -418,24 +406,24 @@ export default function ModelSettings() {
                       <p className="text-xs text-muted-foreground">更多样化和创意性的建议</p>
                     </TooltipContent>
                   </Tooltip>
-                </div>
-              </TooltipProvider>
+                </TooltipProvider>
+              </div>
             </div>
 
-            <div className="col-span-4 text-sm text-muted-foreground">
+            <div className="text-sm text-muted-foreground">
               {settings.provider === "openai" && (
-              <p>
-                对于 OpenAI，您可以在{" "}
-                <a
-                  href="https://platform.openai.com/api-keys"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary underline"
-                >
-                  OpenAI 平台
-                </a>{" "}
-                上获取 API 密钥。
-              </p>
+                <p>
+                  对于 OpenAI，您可以在{" "}
+                  <a
+                    href="https://platform.openai.com/api-keys"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary underline"
+                  >
+                    OpenAI 平台
+                  </a>{" "}
+                  上获取 API 密钥。
+                </p>
               )}
               {settings.provider === "siliconflow" && (
                 <p className="mt-2">
@@ -463,4 +451,4 @@ export default function ModelSettings() {
       </Dialog>
     </>
   )
-} 
+}

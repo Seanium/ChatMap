@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect, useRef, KeyboardEvent } from "react"
+import { useState, useEffect, useRef, type KeyboardEvent } from "react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -21,19 +21,19 @@ const ReactMarkdown = dynamic(() => import("react-markdown"), { ssr: false })
 
 // 消息类型定义
 interface Message {
-  id: string;
-  role: "user" | "assistant" | "system";
-  content: string;
-  isLoading?: boolean;
-  error?: boolean;
+  id: string
+  role: "user" | "assistant" | "system"
+  content: string
+  isLoading?: boolean
+  error?: boolean
 }
 
 interface Location {
-  id: string;
-  title: string;
-  description: string;
-  latitude: number;
-  longitude: number;
+  id: string
+  title: string
+  description: string
+  latitude: number
+  longitude: number
 }
 
 export default function ChatInterface() {
@@ -46,7 +46,7 @@ export default function ChatInterface() {
   const [isExtractingInfo, setIsExtractingInfo] = useState(false) // 提取信息状态
   const [isUpdatingMap, setIsUpdatingMap] = useState(false) // 更新地图状态
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  
+
   // 添加AbortController引用
   const abortControllerRef = useRef<AbortController | null>(null)
 
@@ -71,7 +71,7 @@ export default function ChatInterface() {
   useEffect(() => {
     scrollToBottom()
   }, [messages])
-  
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }
@@ -83,30 +83,30 @@ export default function ChatInterface() {
 
   // 调整文本域高度的函数
   const adjustTextareaHeight = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const target = e.target;
+    const target = e.target
     // 更新查询
-    setQuery(target.value);
-    
+    setQuery(target.value)
+
     // 如果内容为空，直接重置高度
     if (!target.value.trim()) {
-      target.style.height = '38px';
-      return;
+      target.style.height = "38px"
+      return
     }
-    
+
     // 重置高度，让scrollHeight计算正确
-    target.style.height = 'auto';
-    // 设置新高度，即使在内容减少时也能正确调整
-    const newHeight = Math.min(Math.max(target.scrollHeight, 38), 150);
-    target.style.height = `${newHeight}px`;
-  };
+    target.style.height = "38px"
+    // 设置新高度，但限制最大高度为100px
+    const newHeight = Math.min(Math.max(target.scrollHeight, 38), 100)
+    target.style.height = `${newHeight}px`
+  }
 
   // 重置文本框高度的函数
   const resetTextareaHeight = () => {
-    const textarea = document.querySelector('textarea') as HTMLTextAreaElement;
+    const textarea = document.querySelector("textarea") as HTMLTextAreaElement
     if (textarea) {
-      textarea.style.height = '38px';
+      textarea.style.height = "38px"
     }
-  };
+  }
 
   // 提交查询并开始流式响应
   const handleSubmit = async (e: React.FormEvent) => {
@@ -117,7 +117,7 @@ export default function ChatInterface() {
     if (!trimmedQuery) return
 
     // 重置文本框高度
-    resetTextareaHeight();
+    resetTextareaHeight()
 
     // 检查是否设置了模型
     if (!hasModelSettings) {
@@ -136,7 +136,7 @@ export default function ChatInterface() {
       role: "user",
       content: trimmedQuery,
     }
-    
+
     // 创建助手的初始加载消息
     const assistantMessageId = generateId()
     const assistantMessage: Message = {
@@ -145,18 +145,18 @@ export default function ChatInterface() {
       content: "",
       isLoading: true,
     }
-    
+
     // 添加消息到对话中
-    setMessages(prev => [...prev, userMessage, assistantMessage])
-    
+    setMessages((prev) => [...prev, userMessage, assistantMessage])
+
     // 清空输入
     setQuery("")
-    
+
     // 滚动到底部
     setTimeout(scrollToBottom, 100)
-    
+
     // 开始生成回复
-    handleGenerateResponse(trimmedQuery, userMessageId, assistantMessageId);
+    handleGenerateResponse(trimmedQuery, userMessageId, assistantMessageId)
   }
 
   const handleClearConversation = () => {
@@ -167,18 +167,18 @@ export default function ChatInterface() {
         abortControllerRef.current.abort()
         abortControllerRef.current = null
       }
-      
+
       setIsStreaming(false)
       setIsExtractingInfo(false)
       setIsUpdatingMap(false)
-      
+
       // 添加一条消息提示用户响应已被中断
       // toast({
       //   title: "已中断",
       //   description: "响应生成已被取消",
       // })
     }
-    
+
     // 清空消息和地图标记
     setMessages([])
     setMarkers([])
@@ -193,155 +193,150 @@ export default function ChatInterface() {
         abortControllerRef.current.abort() // 取消之前的请求（如果有）
       }
       abortControllerRef.current = new AbortController()
-      
+
       setIsStreaming(true)
-      
+
       // 准备对话历史
       const conversationHistory = messages
-        .filter(m => m.role === "user" || m.role === "assistant")
-        .map(m => ({
+        .filter((m) => m.role === "user" || m.role === "assistant")
+        .map((m) => ({
           role: m.role,
-          content: m.content
-        }));
+          content: m.content,
+        }))
 
       // 添加当前用户消息
       conversationHistory.push({
         role: "user",
-        content: queryText
-      });
-      
+        content: queryText,
+      })
+
       // 开始流式响应，传入AbortSignal
-      const stream = await generateStreamingResponseClient(
-        conversationHistory, 
-        abortControllerRef.current.signal
-      )
-      
+      const stream = await generateStreamingResponseClient(conversationHistory, abortControllerRef.current.signal)
+
       if (!stream) {
         throw new Error("无法创建流式响应")
       }
-      
+
       let fullResponse = ""
-      
+
       // 处理流式响应
       for await (const chunk of stream) {
         // 如果请求已被取消，停止处理
         if (abortControllerRef.current?.signal.aborted) {
-          break;
+          break
         }
-        
+
         if (chunk) {
           fullResponse += chunk
-          
+
           // 更新助手消息的内容
-          setMessages(prev => 
-            prev.map(msg => 
-              msg.id === assistantMessageId 
-                ? { ...msg, content: fullResponse, isLoading: false } 
-                : msg
-            )
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantMessageId ? { ...msg, content: fullResponse, isLoading: false } : msg,
+            ),
           )
         }
       }
-      
+
       // 如果请求已被取消，不再继续后续处理
       if (abortControllerRef.current?.signal.aborted) {
-        return;
+        return
       }
-      
+
       // 流式响应完成后，等待一小段时间确保前端更新
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100))
 
       // 添加一条流式回答已完成的调试日志
-      console.log(`[聊天界面] 流式回答已完成，内容: "${fullResponse.substring(0, 100)}${fullResponse.length > 100 ? '...' : ''}"`);
+      console.log(
+        `[聊天界面] 流式回答已完成，内容: "${fullResponse.substring(0, 100)}${fullResponse.length > 100 ? "..." : ""}"`,
+      )
 
       // 开始提取信息
-      setIsExtractingInfo(true);
+      setIsExtractingInfo(true)
       try {
         // 如果请求已被取消，不再继续处理
         if (abortControllerRef.current?.signal.aborted) {
-          return;
+          return
         }
-        
+
         // 更新对话历史，确保包含最新的助手回答，这对后续提取很重要
-        const updatedConversationHistory = [
-          ...conversationHistory,
-          { role: "assistant", content: fullResponse }
-        ];
-        
+        const updatedConversationHistory = [...conversationHistory, { role: "assistant", content: fullResponse }]
+
         // 调用常规API获取结构化数据
-        console.log(`[聊天界面] 开始从回答中提取信息`);
-        const response = await generateMapResponseClient(queryText, updatedConversationHistory);
-        
+        console.log(`[聊天界面] 开始从回答中提取信息`)
+        const response = await generateMapResponseClient(queryText, updatedConversationHistory)
+
         // 如果请求已被取消，不再继续处理
         if (abortControllerRef.current?.signal.aborted) {
-          return;
+          return
         }
-        
-        console.log(`[聊天界面] 提取信息完成，任务类型: ${response.task_type}, 地点数量: ${response.locations?.length || 0}`);
+
+        console.log(
+          `[聊天界面] 提取信息完成，任务类型: ${response.task_type}, 地点数量: ${response.locations?.length || 0}`,
+        )
 
         // 设置任务类型
-        setTaskType(response.task_type);
-        
+        setTaskType(response.task_type)
+
         // 根据任务类型决定是否更新地图
         if (response.task_type !== TASK_TYPES.NO_MAP_UPDATE) {
-          setIsExtractingInfo(false);
-          setIsUpdatingMap(true);
-          
+          setIsExtractingInfo(false)
+          setIsUpdatingMap(true)
+
           // 如果请求已被取消，不再继续处理
           if (abortControllerRef.current?.signal.aborted) {
-            return;
+            return
           }
-          
+
           if (response.locations?.length > 0) {
             // 设置标记
-            setMarkers(Array.isArray(response.locations) ? response.locations : []);
-            console.log(`[地图数据] 任务类型: ${response.task_type}, 地点数量: ${response.locations.length}`);
+            setMarkers(Array.isArray(response.locations) ? response.locations : [])
+            console.log(`[地图数据] 任务类型: ${response.task_type}, 地点数量: ${response.locations.length}`)
           } else {
-            console.log(`[地图数据] 未提取到地点信息`);
-            setMarkers([]);
+            console.log(`[地图数据] 未提取到地点信息`)
+            setMarkers([])
           }
         } else {
-          console.log(`[聊天界面] 无需更新地图的任务: ${response.task_type}`);
+          console.log(`[聊天界面] 无需更新地图的任务: ${response.task_type}`)
           // 清除可能存在的地图数据
-          setMarkers([]);
+          setMarkers([])
         }
       } catch (mapError) {
         // 如果请求已被取消，不再记录错误
         if (abortControllerRef.current?.signal.aborted) {
-          return;
+          return
         }
-        
-        console.error("提取信息出错:", mapError);
+
+        console.error("提取信息出错:", mapError)
         // 不中断流程，因为文本回复已经生成
       } finally {
         // 仅在未被取消的情况下重置状态
         if (!abortControllerRef.current?.signal.aborted) {
-          setIsExtractingInfo(false);
-          setIsUpdatingMap(false);
+          setIsExtractingInfo(false)
+          setIsUpdatingMap(false)
         }
       }
-      
     } catch (error) {
       // 如果是用户主动取消，不显示错误
       if (error instanceof Error && (error.message === "用户取消了请求" || error.name === "AbortError")) {
-        console.log("用户取消了请求");
-        return;
+        console.log("用户取消了请求")
+        return
       }
-      
+
       console.error("Error in handleGenerateResponse:", error)
-      
+
       // 更新助手消息为错误状态
-      setMessages(prev => 
-        prev.map(msg => 
-          msg.id === assistantMessageId 
-            ? { 
-                ...msg, 
-                content: `生成响应时出错: ${error instanceof Error ? error.message : "未知错误"}。请稍后再试或尝试不同的查询。`, 
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === assistantMessageId
+            ? {
+                ...msg,
+                content: `生成响应时出错: ${error instanceof Error ? error.message : "未知错误"}。请稍后再试或尝试不同的查询。`,
                 isLoading: false,
-                error: true 
-              } 
-            : msg
-        )
+                error: true,
+              }
+            : msg,
+        ),
       )
 
       // 显示提示通知
@@ -355,8 +350,8 @@ export default function ChatInterface() {
       setMarkers([])
     } finally {
       // 清除AbortController
-      abortControllerRef.current = null;
-      
+      abortControllerRef.current = null
+
       // 重置状态
       setIsStreaming(false)
       setIsExtractingInfo(false)
@@ -373,10 +368,10 @@ export default function ChatInterface() {
 
       // 设置查询内容（用于显示在输入框中）
       setQuery(suggestedQuery)
-      
+
       // 重置文本框高度
-      resetTextareaHeight();
-      
+      resetTextareaHeight()
+
       // 使用预设的查询内容直接提交，而不是依赖表单
       if (!isStreaming && !isExtractingInfo && !isUpdatingMap) {
         // 添加用户消息
@@ -386,7 +381,7 @@ export default function ChatInterface() {
           role: "user",
           content: suggestedQuery,
         }
-        
+
         // 创建助手的初始加载消息
         const assistantMessageId = generateId()
         const assistantMessage: Message = {
@@ -395,18 +390,18 @@ export default function ChatInterface() {
           content: "",
           isLoading: true,
         }
-        
+
         // 添加消息到对话中
-        setMessages(prev => [...prev, userMessage, assistantMessage])
-        
+        setMessages((prev) => [...prev, userMessage, assistantMessage])
+
         // 清空输入
         setQuery("")
-        
+
         // 滚动到底部
         setTimeout(scrollToBottom, 100)
-        
+
         // 开始生成回复
-        handleGenerateResponse(suggestedQuery, userMessageId, assistantMessageId);
+        handleGenerateResponse(suggestedQuery, userMessageId, assistantMessageId)
       }
     } catch (error) {
       console.error("Error in handleSuggestedQuery:", error)
@@ -420,14 +415,14 @@ export default function ChatInterface() {
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     // 如果按下Enter键且没有按住Shift键，则提交表单
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      const form = document.getElementById("chat-form") as HTMLFormElement;
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault()
+      const form = document.getElementById("chat-form") as HTMLFormElement
       if (form && !isStreaming && !isExtractingInfo && !isUpdatingMap) {
-        form.requestSubmit();
+        form.requestSubmit()
       }
     }
-  };
+  }
 
   return (
     <div className="w-full md:w-[450px] border-l flex flex-col h-full">
@@ -439,10 +434,10 @@ export default function ChatInterface() {
 
         <TabsContent value="answer" className="flex-1 flex flex-col overflow-hidden relative">
           {messages.length > 0 && (
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               size="icon"
-              onClick={handleClearConversation} 
+              onClick={handleClearConversation}
               disabled={messages.length === 0}
               className="absolute top-2 left-2 z-10 h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background/90 shadow-sm"
             >
@@ -450,31 +445,26 @@ export default function ChatInterface() {
               <span className="sr-only">清除对话</span>
             </Button>
           )}
-          
+
           {messages.length > 0 ? (
             <ScrollArea className="flex-1 p-4">
               <div className="space-y-4 pb-4">
                 {messages.map((message) => (
-                  <div 
+                  <div
                     key={message.id}
-                    className={cn(
-                      "flex gap-3",
-                      message.role === "user" ? "justify-end" : "justify-start"
-                    )}
+                    className={cn("flex gap-3", message.role === "user" ? "justify-end" : "justify-start")}
                   >
                     {message.role === "assistant" && (
                       <Avatar>
                         <AvatarFallback className="bg-primary text-primary-foreground">AI</AvatarFallback>
                       </Avatar>
                     )}
-                    
-                    <div 
+
+                    <div
                       className={cn(
                         "rounded-lg px-4 py-2 max-w-[80%] leading-relaxed",
-                        message.role === "user" 
-                          ? "bg-primary text-primary-foreground" 
-                          : "bg-muted",
-                        message.error && "bg-destructive text-destructive-foreground"
+                        message.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted",
+                        message.error && "bg-destructive text-destructive-foreground",
                       )}
                     >
                       {message.isLoading ? (
@@ -484,9 +474,7 @@ export default function ChatInterface() {
                         </div>
                       ) : (
                         <div className="prose prose-sm dark:prose-invert max-w-none overflow-hidden leading-relaxed">
-                          <ReactMarkdown>
-                            {message.content.replace(/^\n+/, '')}
-                          </ReactMarkdown>
+                          <ReactMarkdown>{message.content.replace(/^\n+/, "")}</ReactMarkdown>
                         </div>
                       )}
                     </div>
@@ -499,7 +487,7 @@ export default function ChatInterface() {
                   </div>
                 ))}
                 <div ref={messagesEndRef} />
-                
+
                 {isExtractingInfo && (
                   <div className="flex justify-center my-2">
                     <div className="bg-muted text-muted-foreground text-xs px-3 py-1 rounded-full flex items-center">
@@ -508,7 +496,7 @@ export default function ChatInterface() {
                     </div>
                   </div>
                 )}
-                
+
                 {isUpdatingMap && (
                   <div className="flex justify-center my-2">
                     <div className="bg-muted text-muted-foreground text-xs px-3 py-1 rounded-full flex items-center">
@@ -533,14 +521,15 @@ export default function ChatInterface() {
               onKeyDown={handleKeyDown}
               placeholder="搜索或询问任何地点..."
               disabled={isStreaming || isExtractingInfo || isUpdatingMap}
-              className="flex-1 min-h-[38px] max-h-[150px] resize-none py-2"
-              style={{height: '38px'}}
+              className="flex-1 min-h-[38px] max-h-[100px] resize-none py-2 overflow-y-auto"
+              style={{ height: "38px" }}
             />
             <Button type="submit" size="icon" disabled={isStreaming || isExtractingInfo || isUpdatingMap}>
-              {isStreaming || isExtractingInfo || isUpdatingMap ? 
-                <Loader2 className="h-4 w-4 animate-spin" /> : 
+              {isStreaming || isExtractingInfo || isUpdatingMap ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
                 <Send className="h-4 w-4" />
-              }
+              )}
             </Button>
           </form>
         </TabsContent>
